@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="JUCE">
+      <UniqueIdentifier>{2190b99c-5ebb-4637-9bfd-45ef4eab050f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PluginProcessor.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MainWindow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_basics\juce_audio_basics.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_formats\juce_audio_formats.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_processors\juce_audio_processors.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_utils\juce_audio_utils.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_core\juce_core.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_events\juce_events.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_graphics\juce_graphics.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_gui_basics\juce_gui_basics.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_opengl\juce_opengl.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_data_structures\juce_data_structures.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_plugin_client\utility\juce_PluginUtilities.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_plugin_client\VST\juce_VST_Wrapper.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_plugin_client\VST3\juce_VST3_Wrapper.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PluginProcessor.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MainWindow.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="AppConfig.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="JuceHeaders.h">
+      <Filter>JUCE</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

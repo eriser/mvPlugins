@@ -1,0 +1,12 @@
+/.vs
+/ipch
+/Release
+/Debug
+/JUCE
+
+*.opensdf
+*.opendb
+*.sdf
+*.suo
+*.aps
+*.vcxproj.user

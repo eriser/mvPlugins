@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{5557C2D7-5DE2-A7BC-EA06-DC53D41FE58D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JUCE">
+      <UniqueIdentifier>{ccd2eb52-b33c-4c7c-a4b9-3928eb07bf54}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AppConfig.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MidiSetup.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SynthComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Spectrograph\JuceHeaders.h">
+      <Filter>JUCE</Filter>
+    </ClInclude>
+    <ClInclude Include="JuceHeaders.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MainComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MidiSetup.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SynthComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_basics\juce_audio_basics.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_devices\juce_audio_devices.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_formats\juce_audio_formats.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_processors\juce_audio_processors.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_audio_utils\juce_audio_utils.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_core\juce_core.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_events\juce_events.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_graphics\juce_graphics.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_gui_basics\juce_gui_basics.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\JUCE\modules\juce_data_structures\juce_data_structures.cpp">
+      <Filter>JUCE</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

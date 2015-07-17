@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2015
+Project("{1A07B8AB-DEFE-CEB1-352F-49A2A9644D0F}") = "SynthTest", "SynthTest.vcxproj", "{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}.Debug|Win32.Build.0 = Debug|Win32
+		{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}.Release|Win32.ActiveCfg = Release|Win32
+		{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
