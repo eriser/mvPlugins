@@ -23,13 +23,19 @@ struct SynthAudioSource : public AudioSource
     mvSynth::Synth synth;
 };
 
-class SynthComponent : public Component
+class SynthComponent
+    : public Component
+    , private FilenameComponentListener
+    , private ButtonListener
 {
 public:
     SynthComponent(AudioDeviceManager& audioDeviceManager);
     ~SynthComponent();
     void paint(Graphics& g) override;
     void resized() override;
+    void filenameComponentChanged(FilenameComponent*) override;
+    void loadPreset(const std::string& presetStr);
+    void buttonClicked(Button* button) override;
 
 private:
     AudioDeviceManager& deviceManager;
@@ -37,6 +43,15 @@ private:
     AudioSourcePlayer audioSourcePlayer;
     SynthAudioSource synthAudioSource;
     MidiKeyboardComponent keyboardComponent;
+
+    // TODO: create custom tokenizer
+    CPlusPlusCodeTokeniser tokenizer;
+    FilenameComponent fileChooser;
+    CodeDocument codeDocument;
+    ScopedPointer<CodeEditorComponent> editor;
+
+    ScopedPointer<Button> realoadButton;
+    TextEditor outputBox;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SynthComponent)
 };

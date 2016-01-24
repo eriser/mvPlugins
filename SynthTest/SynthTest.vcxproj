@@ -28,6 +28,7 @@
     <ClCompile Include="..\JUCE\modules\juce_events\juce_events.cpp" />
     <ClCompile Include="..\JUCE\modules\juce_graphics\juce_graphics.cpp" />
     <ClCompile Include="..\JUCE\modules\juce_gui_basics\juce_gui_basics.cpp" />
+    <ClCompile Include="..\JUCE\modules\juce_gui_extra\juce_gui_extra.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainComponent.cpp" />
     <ClCompile Include="MidiSetup.cpp" />

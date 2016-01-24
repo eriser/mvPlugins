@@ -101,7 +101,7 @@ public:
     /**
      * Parse and create preset from YAML string.
      */
-    bool LoadConfig(const std::string& str);
+    bool LoadConfig(const std::string& str, std::string* messages);
 };
 
 } // namespace mvSynth

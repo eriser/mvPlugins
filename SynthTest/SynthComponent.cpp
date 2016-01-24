@@ -8,9 +8,6 @@
 SynthAudioSource::SynthAudioSource(MidiKeyboardState& keyState)
     : keyboardState(keyState)
 {
-    std::ifstream presetFile("../SynthPresets/init.yaml");
-    std::string str((std::istreambuf_iterator<char>(presetFile)), std::istreambuf_iterator<char>());
-    synth.LoadConfig(str);
 }
 
 void SynthAudioSource::prepareToPlay(int /*samplesPerBlockExpected*/, double sampleRate)
@@ -44,43 +41,6 @@ void SynthAudioSource::handleMidiEvent(const MidiMessage& m)
     {
         synth.KillAll();
     }
-
-    /*
-    if (m.isNoteOn())
-    {
-        noteOn(channel, m.getNoteNumber(), m.getFloatVelocity());
-    }
-    else if (m.isNoteOff())
-    {
-        noteOff(channel, m.getNoteNumber(), m.getFloatVelocity(), true);
-    }
-    else if (m.isAllNotesOff() || m.isAllSoundOff())
-    {
-        allNotesOff(channel, true);
-    }
-    else if (m.isPitchWheel())
-    {
-        const int wheelPos = m.getPitchWheelValue();
-        lastPitchWheelValues[channel - 1] = wheelPos;
-        handlePitchWheel(channel, wheelPos);
-    }
-    else if (m.isAftertouch())
-    {
-        handleAftertouch(channel, m.getNoteNumber(), m.getAfterTouchValue());
-    }
-    else if (m.isChannelPressure())
-    {
-        handleChannelPressure(channel, m.getChannelPressureValue());
-    }
-    else if (m.isController())
-    {
-        handleController(channel, m.getControllerNumber(), m.getControllerValue());
-    }
-    else if (m.isProgramChange())
-    {
-        handleProgramChange(channel, m.getProgramChangeNumber());
-    }
-    */
 }
 
 void SynthAudioSource::render(AudioBuffer<float>* buffer, int startSample, int numSamples)
@@ -157,14 +117,39 @@ SynthComponent::SynthComponent(AudioDeviceManager& audioDeviceManager)
     : deviceManager(audioDeviceManager)
     , synthAudioSource(keyboardState)
     , keyboardComponent(keyboardState, MidiKeyboardComponent::horizontalKeyboard)
+    , fileChooser("File", File::nonexistent, false, false, false,
+                  "*.yaml", String(),
+                  "Choose a YAML preset file to open it in the editor")
 {
     addAndMakeVisible(keyboardComponent);
     audioSourcePlayer.setSource(&synthAudioSource);
     deviceManager.addAudioCallback(&audioSourcePlayer);
     deviceManager.addMidiInputCallback(String::empty, &(synthAudioSource.midiCollector));
 
+    // output box
+    addAndMakeVisible(outputBox);
+    outputBox.setReadOnly(true);
+    outputBox.setMultiLine(true);
+    outputBox.setFont(Font(Font::getDefaultMonospacedFontName(), 10.0f, Font::plain));
+
+    // load init preset
+    std::ifstream presetFile("../SynthPresets/init.yaml");
+    std::string str((std::istreambuf_iterator<char>(presetFile)), std::istreambuf_iterator<char>());
+    loadPreset(str);
+
+    addAndMakeVisible(realoadButton = new TextButton("Reload", "Load preset form the editor"));
+    realoadButton->addListener(this);
+
+    // editor box
+    addAndMakeVisible(editor = new CodeEditorComponent(codeDocument, &tokenizer));
+    editor->loadContent(str);
+    editor->setTabSize(4, true);
+
     setOpaque(true);
     setSize(640, 480);
+
+    addAndMakeVisible(fileChooser);
+    fileChooser.addListener(this);
 }
 
 SynthComponent::~SynthComponent()
@@ -182,5 +167,40 @@ void SynthComponent::paint(Graphics& g)
 void SynthComponent::resized()
 {
     Rectangle<int> rect(getLocalBounds());
-    keyboardComponent.setBounds(rect.removeFromTop(64));
+    keyboardComponent.setBounds(rect.removeFromBottom(64));
+
+    Rectangle<int> tempRect = rect.removeFromBottom(64);
+    realoadButton->setBounds(tempRect.removeFromLeft(64).reduced(4));
+    outputBox.setBounds(tempRect);
+
+    fileChooser.setBounds(rect.removeFromTop(25));
+    editor->setBounds(rect);
+}
+
+void SynthComponent::buttonClicked(Button* button)
+{
+    if (button == realoadButton)
+    {
+        std::string str = editor->getTextInRange(Range<int>(0, INT_MAX)).toStdString();
+
+        loadPreset(str);
+    }
+}
+
+void SynthComponent::loadPreset(const std::string& presetStr)
+{
+    synthAudioSource.synth.KillAll();
+
+    std::string messages;
+    if (synthAudioSource.synth.LoadConfig(presetStr, &messages))
+        outputBox.setText("Preset loaded:\n" + messages);
+    else
+        outputBox.setText("Failed to load preset:\n" + messages);
+}
+
+void SynthComponent::filenameComponentChanged(FilenameComponent*)
+{
+    String str = fileChooser.getCurrentFile().loadFileAsString();
+    editor->loadContent(str);
+    loadPreset(str.toStdString());
 }

@@ -338,7 +338,7 @@ bool Synth::ParseLinkFromConfig(const YAML::Node& node, std::string& errorStr)
     return true;
 }
 
-bool Synth::LoadConfig(const std::string& str)
+bool Synth::LoadConfig(const std::string& str, std::string* messages)
 {
     YAML::Node config = YAML::Load(str);
     std::string errorStr;
@@ -415,9 +415,16 @@ bool Synth::LoadConfig(const std::string& str)
 
     if (!success)
     {
-        // TODO: temporary
-        MessageBoxA(0, errorStr.c_str(), "Failed to load preset", MB_OK | MB_ICONERROR);
+        if (messages != nullptr)
+            *messages = errorStr;
+
         return false;
+    }
+
+    if (messages != nullptr)
+    {
+        *messages += "Modules: " + std::to_string(mModules.size()) + '\n';
+        *messages += "Links: " + std::to_string(mLinks.size()) + '\n';
     }
 
     return true;
