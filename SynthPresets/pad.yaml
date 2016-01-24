@@ -1,0 +1,56 @@
+osc:
+    name:      osc
+    shape:     saw
+    pitch:     -24.0
+    stereo:    1.0
+    subvoices: 8
+    detune:    0.004
+    retrig:    false
+
+osc:
+    name:      osc2
+    shape:     sine
+    pitch:     -36.0
+    stereo:    0.9
+    subvoices: 6
+    detune:    0.005
+    retrig:    false
+
+filter:
+    name:      filter
+    type:      lowpass
+    cutoff:    0.05
+    resonance: 0.8
+    order:     2
+
+# link evelope generator with osc volume
+env:
+    name:    adsr
+    attack:  1.0
+    decay:   0.0
+    sustain: 1.0
+    release: 0.8
+link:
+    src:      adsr
+    dest:     osc
+    destPort: volume
+link:
+    src:      adsr
+    dest:     osc2
+    destPort: volume
+
+link:
+    src:      osc
+    dest:     filter
+    destPort: input
+    scale:    0.8
+link:
+    src:      osc2
+    dest:     filter
+    destPort: input
+
+# connect filter to synth out ("master")
+link:
+    src:      filter
+    dest:     master
+    destPort: input

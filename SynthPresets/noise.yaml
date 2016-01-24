@@ -1,0 +1,33 @@
+noise:
+    name:   osc
+    distr:  uniform
+    hold:   1
+
+filter:
+    name:      filter
+    type:      bandpass
+    cutoff:    0.4
+    resonance: 1.0
+    order:     2
+
+env:
+    name:    adsr
+    attack:  0.003
+    decay:   0.0
+    sustain: 1.0
+    release: 0.4
+
+link:
+    src:      adsr
+    dest:     osc
+    destPort: volume
+
+link:
+    src:      osc
+    dest:     filter
+    destPort: input
+
+link:
+    src:      filter
+    dest:     master
+    destPort: input

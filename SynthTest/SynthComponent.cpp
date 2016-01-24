@@ -1,124 +1,94 @@
 #include "JuceHeaders.h"
 #include "SynthComponent.h"
 
-SineWaveVoice::SineWaveVoice()
-    : currentAngle(0), angleDelta(0), level(0), tailOff(0)
-{
-}
 
-bool SineWaveVoice::canPlaySound(SynthesiserSound* sound)
-{
-    return dynamic_cast<SineWaveSound*> (sound) != nullptr;
-}
-
-void SineWaveVoice::startNote(int midiNoteNumber, float velocity,
-                SynthesiserSound*, int /*currentPitchWheelPosition*/)
-{
-    currentAngle = 0.0;
-    level = velocity * 0.15;
-    tailOff = 0.0;
-
-    double cyclesPerSecond = MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-    double cyclesPerSample = cyclesPerSecond / getSampleRate();
-
-    angleDelta = cyclesPerSample * 2.0 * double_Pi;
-}
-
-void SineWaveVoice::stopNote(float /*velocity*/, bool allowTailOff)
-{
-    if (allowTailOff)
-    {
-        // start a tail-off by setting this flag. The render callback will pick up on
-        // this and do a fade out, calling clearCurrentNote() when it's finished.
-        if (tailOff == 0.0) // we only need to begin a tail-off if it's not already doing so - the
-                            // stopNote method could be called more than once.
-            tailOff = 1.0;
-    }
-    else
-    {
-        // we're being told to stop playing immediately, so reset everything..
-        clearCurrentNote();
-        angleDelta = 0.0;
-    }
-}
-
-void SineWaveVoice::pitchWheelMoved(int /*newValue*/)
-{
-    // can't be bothered implementing this for the demo!
-}
-
-void SineWaveVoice::controllerMoved(int /*controllerNumber*/, int /*newValue*/)
-{
-    // not interested in controllers in this case.
-}
-
-void SineWaveVoice::renderNextBlock(AudioSampleBuffer& outputBuffer, int startSample, int numSamples)
-{
-    if (angleDelta != 0.0)
-    {
-        if (tailOff > 0)
-        {
-            while (--numSamples >= 0)
-            {
-                const float currentSample = (float)(std::sin(currentAngle) * level * tailOff);
-
-                for (int i = outputBuffer.getNumChannels(); --i >= 0;)
-                    outputBuffer.addSample(i, startSample, currentSample);
-
-                currentAngle += angleDelta;
-                ++startSample;
-
-                tailOff *= 0.99;
-
-                if (tailOff <= 0.005)
-                {
-                    clearCurrentNote();
-
-                    angleDelta = 0.0;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            while (--numSamples >= 0)
-            {
-                const float currentSample = (float)(std::sin(currentAngle) * level);
-
-                for (int i = outputBuffer.getNumChannels(); --i >= 0;)
-                    outputBuffer.addSample(i, startSample, currentSample);
-
-                currentAngle += angleDelta;
-                ++startSample;
-            }
-        }
-    }
-}
-
-
-// SynthAudioSource ===============================================================================
+#include <fstream>
+#include <streambuf>
 
 SynthAudioSource::SynthAudioSource(MidiKeyboardState& keyState)
     : keyboardState(keyState)
 {
-    // Add some voices to our synth, to play the sounds..
-    for (int i = 4; --i >= 0;)
-    {
-        synth.addVoice(new SineWaveVoice());   // These voices will play our custom sine-wave sounds..
-        synth.addVoice(new SamplerVoice());    // and these ones play the sampled sounds
-    }
-
-    synth.addSound(new SineWaveSound());
+    std::ifstream presetFile("../SynthPresets/init.yaml");
+    std::string str((std::istreambuf_iterator<char>(presetFile)), std::istreambuf_iterator<char>());
+    synth.LoadConfig(str);
 }
 
 void SynthAudioSource::prepareToPlay(int /*samplesPerBlockExpected*/, double sampleRate)
 {
     midiCollector.reset(sampleRate);
-    synth.setCurrentPlaybackSampleRate(sampleRate);
+    synth.SetSampleRate(sampleRate);
 }
 
 void SynthAudioSource::releaseResources()
 {
+}
+
+void SynthAudioSource::handleMidiEvent(const MidiMessage& m)
+{
+    const int channel = m.getChannel();
+    const int noteOffset = -24;
+
+    if (m.isNoteOn())
+    {
+        synth.PressKey(m.getNoteNumber() + noteOffset, m.getFloatVelocity(), 0.0);
+    }
+    else if (m.isNoteOff())
+    {
+        synth.ReleaseKey(m.getNoteNumber() + noteOffset);
+    }
+    else if (m.isAllNotesOff())
+    {
+        synth.ReleaseAll();
+    }
+    else if (m.isAllSoundOff())
+    {
+        synth.KillAll();
+    }
+
+    /*
+    if (m.isNoteOn())
+    {
+        noteOn(channel, m.getNoteNumber(), m.getFloatVelocity());
+    }
+    else if (m.isNoteOff())
+    {
+        noteOff(channel, m.getNoteNumber(), m.getFloatVelocity(), true);
+    }
+    else if (m.isAllNotesOff() || m.isAllSoundOff())
+    {
+        allNotesOff(channel, true);
+    }
+    else if (m.isPitchWheel())
+    {
+        const int wheelPos = m.getPitchWheelValue();
+        lastPitchWheelValues[channel - 1] = wheelPos;
+        handlePitchWheel(channel, wheelPos);
+    }
+    else if (m.isAftertouch())
+    {
+        handleAftertouch(channel, m.getNoteNumber(), m.getAfterTouchValue());
+    }
+    else if (m.isChannelPressure())
+    {
+        handleChannelPressure(channel, m.getChannelPressureValue());
+    }
+    else if (m.isController())
+    {
+        handleController(channel, m.getControllerNumber(), m.getControllerValue());
+    }
+    else if (m.isProgramChange())
+    {
+        handleProgramChange(channel, m.getProgramChangeNumber());
+    }
+    */
+}
+
+void SynthAudioSource::render(AudioBuffer<float>* buffer, int startSample, int numSamples)
+{
+    float* left = buffer->getWritePointer(0);
+    float* right = buffer->getWritePointer(1);
+    float* ptrs[] = { left + startSample, right + startSample };
+    synth.Synthesize(ptrs, numSamples);
 }
 
 void SynthAudioSource::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill)
@@ -137,8 +107,47 @@ void SynthAudioSource::getNextAudioBlock(const AudioSourceChannelInfo& bufferToF
     // the mouse-clicking on the on-screen keyboard.
     keyboardState.processNextMidiBuffer(incomingMidi, 0, bufferToFill.numSamples, true);
 
-    // and now get the synth to process the midi events and generate its output.
-    synth.renderNextBlock(*bufferToFill.buffer, incomingMidi, 0, bufferToFill.numSamples);
+    MidiBuffer::Iterator midiIterator(incomingMidi);
+    midiIterator.setNextSamplePosition(0);
+
+    int midiEventPos;
+    MidiMessage m;
+
+    // const ScopedLock sl(lock);
+
+    int startSample = 0;
+    int numSamples = bufferToFill.numSamples;
+    while (numSamples > 0)
+    {
+        if (!midiIterator.getNextEvent(m, midiEventPos))
+        {
+            render(bufferToFill.buffer, startSample, numSamples);
+            return;
+        }
+
+        const int samplesToNextMidiMessage = midiEventPos;
+
+        if (samplesToNextMidiMessage >= numSamples)
+        {
+            render(bufferToFill.buffer, startSample, numSamples);
+            handleMidiEvent(m);
+            break;
+        }
+
+        if (samplesToNextMidiMessage < 64)
+        {
+            handleMidiEvent(m);
+            continue;
+        }
+
+        render(bufferToFill.buffer, startSample, samplesToNextMidiMessage);
+        handleMidiEvent(m);
+        startSample += samplesToNextMidiMessage;
+        numSamples -= samplesToNextMidiMessage;
+    }
+
+    while (midiIterator.getNextEvent(m, midiEventPos))
+        handleMidiEvent(m);
 }
 
 

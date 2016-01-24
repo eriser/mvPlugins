@@ -1,0 +1,24 @@
+osc:
+    name:      osc
+    shape:     saw
+    pitch:     -12.0
+    stereo:    0.0
+    subvoices: 1
+
+env:
+    name:    adsr
+    attack:  0.0
+    decay:   0.0
+    sustain: 1.0
+    release: 0.0
+
+link:
+    src:      adsr
+    dest:     osc
+    destPort: volume
+
+link:
+    src:      osc
+    dest:     master
+    destPort: input
+    scale:    0.2

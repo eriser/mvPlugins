@@ -4,8 +4,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SynthTest", "SynthTest\SynthTest.vcxproj", "{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785} = {03759A71-A84D-4168-BFF6-4F3BC0E5F785}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Spectrograph", "Spectrograph\Spectrograph.vcxproj", "{F20A0E2F-AE5E-4513-ABF2-302E6113E3E6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yaml-cpp", "yaml-cpp\yaml-cpp.vcxproj", "{B16D5301-D343-459D-8024-BF622C1287D5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SynthLib", "SynthLib\SynthLib.vcxproj", "{03759A71-A84D-4168-BFF6-4F3BC0E5F785}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B16D5301-D343-459D-8024-BF622C1287D5} = {B16D5301-D343-459D-8024-BF622C1287D5}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +37,18 @@ Global
 		{F20A0E2F-AE5E-4513-ABF2-302E6113E3E6}.Release|x64.ActiveCfg = Release|Win32
 		{F20A0E2F-AE5E-4513-ABF2-302E6113E3E6}.Release|x86.ActiveCfg = Release|Win32
 		{F20A0E2F-AE5E-4513-ABF2-302E6113E3E6}.Release|x86.Build.0 = Release|Win32
+		{B16D5301-D343-459D-8024-BF622C1287D5}.Debug|x64.ActiveCfg = Debug|Win32
+		{B16D5301-D343-459D-8024-BF622C1287D5}.Debug|x86.ActiveCfg = Debug|Win32
+		{B16D5301-D343-459D-8024-BF622C1287D5}.Debug|x86.Build.0 = Debug|Win32
+		{B16D5301-D343-459D-8024-BF622C1287D5}.Release|x64.ActiveCfg = Release|Win32
+		{B16D5301-D343-459D-8024-BF622C1287D5}.Release|x86.ActiveCfg = Release|Win32
+		{B16D5301-D343-459D-8024-BF622C1287D5}.Release|x86.Build.0 = Release|Win32
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785}.Debug|x64.ActiveCfg = Debug|Win32
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785}.Debug|x86.ActiveCfg = Debug|Win32
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785}.Debug|x86.Build.0 = Debug|Win32
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785}.Release|x64.ActiveCfg = Release|Win32
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785}.Release|x86.ActiveCfg = Release|Win32
+		{03759A71-A84D-4168-BFF6-4F3BC0E5F785}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

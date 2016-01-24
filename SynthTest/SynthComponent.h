@@ -1,40 +1,14 @@
 #pragma once
 
-struct SineWaveSound : public SynthesiserSound
-{
-    SineWaveSound() { }
-
-    bool appliesToNote(int /*midiNoteNumber*/) override
-    {
-        return true;
-    }
-
-    bool appliesToChannel(int /*midiChannel*/) override
-    {
-        return true;
-    }
-};
-
-struct SineWaveVoice : public SynthesiserVoice
-{
-    SineWaveVoice();
-    bool canPlaySound(SynthesiserSound* sound) override;
-    void startNote(int midiNoteNumber, float velocity,
-                   SynthesiserSound*, int /*currentPitchWheelPosition*/) override;
-    void stopNote(float /*velocity*/, bool allowTailOff) override;
-    void pitchWheelMoved(int /*newValue*/) override;
-    void controllerMoved(int /*controllerNumber*/, int /*newValue*/) override;
-    void renderNextBlock(AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
-
-private:
-    double currentAngle, angleDelta, level, tailOff;
-};
+#include "../SynthLib/Synth.h"
 
 struct SynthAudioSource : public AudioSource
 {
     SynthAudioSource(MidiKeyboardState& keyState);
     void prepareToPlay(int /*samplesPerBlockExpected*/, double sampleRate) override;
     void releaseResources() override;
+    void handleMidiEvent(const MidiMessage& m);
+    void render(AudioBuffer<float>* buffer, int startSample, int numSamples);
     void getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill) override;
 
     // this collects real-time midi messages from the midi input device, and
@@ -46,8 +20,7 @@ struct SynthAudioSource : public AudioSource
     // generates midi messages for this, which we can pass on to our synth.
     MidiKeyboardState& keyboardState;
 
-    // the synth itself!
-    Synthesiser synth;
+    mvSynth::Synth synth;
 };
 
 class SynthComponent : public Component

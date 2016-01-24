@@ -1,0 +1,63 @@
+osc:
+    name:      osc
+    shape:     saw
+    pitch:     -12.0
+    stereo:    0.9
+    subvoices: 6
+    detune:    0.005
+    retrig:    false
+
+filter:
+    name:      filter
+    type:      lowpass
+    cutoff:    0.01
+    resonance: 0.8
+    order:     2
+
+# modulate filter cutoff with envelope generator
+env:
+    name:    adsr_cutoff
+    attack:  0.0
+    decay:   0.05
+    sustain: 0.0
+    release: 1.0
+link:
+    src:      adsr_cutoff
+    dest:     filter
+    destPort: cutoff
+    scale:    0.5
+
+# modulate pitch with LFO
+lfo:
+    name:  lfo
+    shape: sine
+    freq:  10.0
+link:
+    src:      lfo
+    dest:     osc
+    destPort: pitch
+    scale:    0.003
+
+# link evelope generator with osc volume
+env:
+    name:    adsr
+    attack:  0.003
+    decay:   0.5
+    sustain: 0.0
+    release: 0.05
+link:
+    src:      adsr
+    dest:     osc
+    destPort: volume
+
+# connect the oscillator to the filter
+link:
+    src:      osc
+    dest:     filter
+    destPort: input
+
+# connect filter to synth out ("master")
+link:
+    src:      filter
+    dest:     master
+    destPort: input
