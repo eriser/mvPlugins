@@ -53,6 +53,15 @@
     <ClInclude Include="EnvelopeGen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Wavetable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interpolator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -86,6 +95,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EnvelopeGen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Interpolator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wavetable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WaveTableSSE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
