@@ -1,13 +1,13 @@
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "Wavetable.hpp"
-#include "Math.hpp"
+#include "../Math.hpp"
 
 #include <xmmintrin.h>
 #include <smmintrin.h> // for SSE4
 
 namespace mvSynth {
 
-float WaveTableContext::Downsample_SSE(float* input)
+double Downsampler::Downsample_SSE(float* input)
 {
     for (int i = 0; i < 2; ++i)
     {
@@ -34,7 +34,7 @@ float WaveTableContext::Downsample_SSE(float* input)
         mY[0] = sum.m128d_f64[0] + sum.m128d_f64[1];
     }
 
-    return static_cast<float>(mY[0]);
+    return mY[0];
 }
 
 __m128 WaveTable::Sample_SSE(int mipmap, __m128 phase, const Interpolator& interpolator) const
@@ -96,14 +96,14 @@ void WaveTable::Synth_SSE(size_t samplesNum, const float* freqBuff, WaveTableCon
     {
         samples = _mm_setzero_ps();
 
-        for (size_t j = 0; j < ctx.mPhases.size(); ++j)
+        for (size_t j = 0; j < ctx.voicesNum; ++j)
         {
             // calculate phases, equal to:
             // phases[0] = ctx[j] + freqBuff[i] * 0.5f;
             // phases[1] = ctx[j] + freqBuff[i];
             // phases[2] = ctx[j] + freqBuff[i] + freqBuff[i + 1] * 0.5f;
             // phases[3] = ctx[j] + freqBuff[i] + freqBuff[i + 1];
-            phases = _mm_set1_ps(ctx.mPhases[j]);
+            phases = _mm_set1_ps(ctx.phases[j]);
             phases = _mm_add_ps(phases, _mm_mul_ps(freq0_factor, _mm_set1_ps(freqBuff[i])));
             phases = _mm_add_ps(phases, _mm_mul_ps(freq1_factor, _mm_set1_ps(freqBuff[i + 1])));
 
@@ -112,12 +112,12 @@ void WaveTable::Synth_SSE(size_t samplesNum, const float* freqBuff, WaveTableCon
             __m128 subValue = _mm_and_ps(ones, compareMask);
             phases = _mm_sub_ps(phases, subValue);
 
-            ctx.mPhases[j] = phases.m128_f32[3];
+            ctx.phases[j] = phases.m128_f32[3];
 
             float ratio = freqBuff[i] * mRootSizeF;
 
             float mipmap_f = fast_log2(ratio);
-            int mipmap = static_cast<int>(floorf(mipmap_f));
+            int mipmap = static_cast<int>(mipmap_f);
             float mipmap_pos = mipmap_f - (float)mipmap;
 
             // mipmap blending
@@ -140,8 +140,9 @@ void WaveTable::Synth_SSE(size_t samplesNum, const float* freqBuff, WaveTableCon
             }
         }
 
-        output[i] =     ctx.Downsample_SSE(samples.m128_f32);
-        output[i + 1] = ctx.Downsample_SSE(samples.m128_f32 + 2);
+        // TODO
+        output[i] =     ctx.mLeftDownsampler.Downsample_SSE(samples.m128_f32);
+        output[i + 1] = ctx.mLeftDownsampler.Downsample_SSE(samples.m128_f32 + 2);
     }
 }
 

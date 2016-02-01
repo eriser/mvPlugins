@@ -40,8 +40,9 @@ void Module::DisconnectInputs()
         p.links.clear();
 }
 
-bool Module::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
+bool Module::ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr)
 {
+    UNUSED(synth);
     UNUSED(node);
     UNUSED(errorStr);
     return true;

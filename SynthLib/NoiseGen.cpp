@@ -16,8 +16,10 @@ NoiseGen::NoiseGen()
     distribution = NoiseDistribution::Uniform;
 }
 
-bool NoiseGen::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
+bool NoiseGen::ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr)
 {
+    UNUSED(synth);
+
     for (const auto& n : node)
     {
         const std::string& str = n.first.as<std::string>();

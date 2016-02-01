@@ -16,8 +16,10 @@ LFO::LFO()
     shape = LFOShape::Sine;
 }
 
-bool LFO::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
+bool LFO::ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr)
 {
+    UNUSED(synth);
+
     for (const auto& n : node)
     {
         const std::string& str = n.first.as<std::string>();

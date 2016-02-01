@@ -20,8 +20,10 @@ Filter::Filter()
     resonance = 0.5;
 }
 
-bool Filter::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
+bool Filter::ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr)
 {
+    UNUSED(synth);
+
     for (const auto& n : node)
     {
         const std::string& str = n.first.as<std::string>();

@@ -73,7 +73,7 @@ public:
     void ClearAllVoices();
     void Process(int voiceID, Synth* synth);
 
-    virtual bool ParseFromConfig(const YAML::Node& node, std::string& errorStr);
+    virtual bool ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr);
 
     virtual void OnProcess(int voiceID, Synth* synth) = 0;
 

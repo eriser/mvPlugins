@@ -57,7 +57,7 @@ public:
     SampleType resonance;
 
     Filter();
-    bool ParseFromConfig(const YAML::Node& node, std::string& errorStr);
+    bool ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr);
     void OnInitVoice(int voiceID, Synth* synth, SampleType freq);
     void OnProcess(int voiceID, Synth* synth);
 };

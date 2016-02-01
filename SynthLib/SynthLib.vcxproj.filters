@@ -9,6 +9,12 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Header Files\Wavetable">
+      <UniqueIdentifier>{2b15c983-5024-4f6d-9bd4-3388221a547a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Wavetable">
+      <UniqueIdentifier>{d6699e1f-60ec-465c-b7b6-a83f1afea3bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -53,14 +59,17 @@
     <ClInclude Include="EnvelopeGen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Wavetable.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Interpolator.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Wavetable\Interpolator.hpp">
+      <Filter>Header Files\Wavetable</Filter>
+    </ClInclude>
+    <ClInclude Include="Wavetable\Wavetable.hpp">
+      <Filter>Header Files\Wavetable</Filter>
+    </ClInclude>
+    <ClInclude Include="Wavetable\Downsampler.hpp">
+      <Filter>Header Files\Wavetable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,17 +106,17 @@
     <ClCompile Include="EnvelopeGen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Interpolator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Wavetable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WaveTableSSE.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Math.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wavetable\Interpolator.cpp">
+      <Filter>Source Files\Wavetable</Filter>
+    </ClCompile>
+    <ClCompile Include="Wavetable\Wavetable.cpp">
+      <Filter>Source Files\Wavetable</Filter>
+    </ClCompile>
+    <ClCompile Include="Wavetable\WaveTableSSE.cpp">
+      <Filter>Source Files\Wavetable</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

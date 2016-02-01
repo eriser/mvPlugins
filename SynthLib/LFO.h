@@ -27,7 +27,7 @@ public:
     SampleType freq;
 
     LFO();
-    bool ParseFromConfig(const YAML::Node& node, std::string& errorStr);
+    bool ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr);
     void OnProcess(int voiceID, Synth* synth);
 };
 

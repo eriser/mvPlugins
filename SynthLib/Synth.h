@@ -4,6 +4,7 @@
 #include "Frame.h"
 #include "MasterModule.h"
 #include "Voice.h"
+#include "Wavetable/Interpolator.hpp"
 
 #include <mutex>
 
@@ -24,6 +25,8 @@ class Synth
 
     SampleType mSampleRate;
     SampleType mSampleRateInv;
+
+    Interpolator mWaveTableInterpolator;
 
     std::unique_ptr<Voice[]> mVoices;
 
@@ -87,6 +90,11 @@ public:
     __forceinline SampleType GetSampleRateInv() const
     {
         return mSampleRateInv;
+    }
+
+    __forceinline const Interpolator& GetInterpolator() const
+    {
+        return mWaveTableInterpolator;
     }
 
     void GetStats(SynthStats* stats);

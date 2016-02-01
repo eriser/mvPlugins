@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Module.h"
+#include "Wavetable/Wavetable.hpp"
 
-#define MW_OSCILLATORS_NUM 4
 #define MW_MAX_SUBVOICES_NUM 16
 
 namespace mvSynth {
@@ -15,28 +15,20 @@ enum class WaveShape
     Saw,
 };
 
-// structure used by band-limited oscillators
-struct OscillatorState
-{
-    SampleType phase;
-    SampleType leak;
-    SampleType freq;
-    SampleType detuneOffset;
-    SampleType d_freq;
-
-    SampleType dcb_state;
-    SampleType last;
-
-    SampleType panning;
-    bool firstSample;
-};
-
 // per-voice oscillator data
 struct OscillatorVoiceData
 {
-    bool faded; //set to 1, if envelope is near to 0
+    //set to 1, if envelope is near to 0
+    bool faded;
+
+    // base oscillator frequency
     SampleType baseFrequency;
-    OscillatorState states[MW_MAX_SUBVOICES_NUM];
+
+    // detune factor for each unison voice
+    SampleType subvoiceDetune[MW_MAX_SUBVOICES_NUM];
+
+    // wavetable state
+    WaveTableContext wtCtx;
 };
 
 /**
@@ -44,6 +36,7 @@ struct OscillatorVoiceData
  */
 class Oscillator final : public Module
 {
+    WaveTable mWaveTable;
     OscillatorVoiceData mVoiceData[MW_MAX_VOICES];
 
 public:
@@ -56,11 +49,12 @@ public:
     SampleType detune;     // unison detune
     SampleType stereo;     // 0 - mono, 1 - stereo
     uint32 subvoicesNum;   // number of unison subvoices
-    WaveShape shape;
     bool retrig;           // reset subvoices phases during key press
 
     Oscillator();
-    bool ParseFromConfig(const YAML::Node& node, std::string& errorStr);
+    void LoadDefaultWaveshape(WaveShape waveShape, Synth* synth);
+
+    bool ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr);
     void OnProcess(int voiceID, Synth* synth);
     void OnInitVoice(int voiceID, Synth* synth, SampleType freq);
 };

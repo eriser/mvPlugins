@@ -1,6 +1,6 @@
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "Interpolator.hpp"
-#include "Math.hpp"
+#include "../Math.hpp"
 
 namespace mvSynth {
 

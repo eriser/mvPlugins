@@ -32,8 +32,10 @@ EnvelopeGen::EnvelopeGen()
     Set(0.005f, 0.05f, 1.0f, 0.1f);
 }
 
-bool EnvelopeGen::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
+bool EnvelopeGen::ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr)
 {
+    UNUSED(synth);
+
     double attack = 0.005f;
     double decay = 0.05f;
     double sustain = 1.0f;

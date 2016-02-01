@@ -26,6 +26,9 @@ Synth::Synth()
     mValidSamples = 0;
     frameSize = 0;
     SetFrameSize(1024);
+
+    // TODO: configurable parameters
+    mWaveTableInterpolator.Setup(16, 96);
 }
 
 size_t Synth::GetFrameSize() const
@@ -356,7 +359,7 @@ bool Synth::LoadConfig(const std::string& str, std::string* messages)
         if (moduleName == "osc")
         {
             std::unique_ptr<Oscillator> osc(new Oscillator);
-            if (osc->ParseFromConfig(n.second, errorStr))
+            if (osc->ParseFromConfig(this, n.second, errorStr))
                 AddModule(osc.release());
             else
                 success = false;
@@ -364,7 +367,7 @@ bool Synth::LoadConfig(const std::string& str, std::string* messages)
         else if (moduleName == "env")
         {
             std::unique_ptr<EnvelopeGen> env(new EnvelopeGen);
-            if (env->ParseFromConfig(n.second, errorStr))
+            if (env->ParseFromConfig(this, n.second, errorStr))
                 AddModule(env.release());
             else
                 success = false;
@@ -372,7 +375,7 @@ bool Synth::LoadConfig(const std::string& str, std::string* messages)
         else if (moduleName == "filter")
         {
             std::unique_ptr<Filter> filter(new Filter);
-            if (filter->ParseFromConfig(n.second, errorStr))
+            if (filter->ParseFromConfig(this, n.second, errorStr))
                 AddModule(filter.release());
             else
                 success = false;
@@ -380,7 +383,7 @@ bool Synth::LoadConfig(const std::string& str, std::string* messages)
         else if (moduleName == "lfo")
         {
             std::unique_ptr<LFO> lfo(new LFO);
-            if (lfo->ParseFromConfig(n.second, errorStr))
+            if (lfo->ParseFromConfig(this, n.second, errorStr))
                 AddModule(lfo.release());
             else
                 success = false;
@@ -388,7 +391,7 @@ bool Synth::LoadConfig(const std::string& str, std::string* messages)
         else if (moduleName == "noise")
         {
             std::unique_ptr<NoiseGen> noise(new NoiseGen);
-            if (noise->ParseFromConfig(n.second, errorStr))
+            if (noise->ParseFromConfig(this, n.second, errorStr))
                 AddModule(noise.release());
             else
                 success = false;

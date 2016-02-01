@@ -1,13 +1,13 @@
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "Wavetable.hpp"
-#include "Math.hpp"
+#include "../Math.hpp"
 
 namespace mvSynth {
 
 // Elliptic IIR filter coefficients generated with Octave:
 // ellip(11, 0.5, 100.0, 0.475)
 
-const double WaveTableContext::a[] =
+const double Downsampler::a[] =
 {
     0.00237215228669364,
     0.01071603665454480,
@@ -23,7 +23,7 @@ const double WaveTableContext::a[] =
     0.00237215228669364
 };
 
-const double WaveTableContext::b[] =
+const double Downsampler::b[] =
 {
     0.0,
     -3.225641030483127,
@@ -39,26 +39,18 @@ const double WaveTableContext::b[] =
     -0.165901630637920,
 };
 
-WaveTableContext::WaveTableContext()
+Downsampler::Downsampler()
 {
-    mPhases.push_back(0.0f);
     Reset();
 }
 
-void WaveTableContext::Reset()
+void Downsampler::Reset()
 {
     for (int i = 0; i < IIR_FILTER_SIZE; ++i)
         mX[i] = mY[i] = 0.0;
 }
 
-void WaveTableContext::Init(size_t numVoices, float* newPhases)
-{
-    mPhases.clear();
-    for (int i = 0; i < numVoices; ++i)
-        mPhases.push_back(newPhases[i]);
-}
-
-float WaveTableContext::Downsample(float* input)
+double Downsampler::Downsample(float* input)
 {
     for (int i = 0; i < 2; ++i)
     {
@@ -77,7 +69,21 @@ float WaveTableContext::Downsample(float* input)
         mY[0] = sum;
     }
 
-    return static_cast<float>(mY[0]);
+    return mY[0];
+}
+
+
+WaveTableContext::WaveTableContext()
+{
+    voicesNum = 1;
+    phases[0] = 0.0f;
+    Reset();
+}
+
+void WaveTableContext::Reset()
+{
+    mLeftDownsampler.Reset();
+    mRightDownsampler.Reset();
 }
 
 
@@ -236,66 +242,73 @@ float WaveTable::Sample_FPU(int mipmap, float phase, const Interpolator& interpo
     return sum;
 }
 
-void WaveTable::Synth_FPU(size_t samplesNum, const float* freqBuff, WaveTableContext& ctx,
-                          const Interpolator& interpolator, float* output) const
+void WaveTable::Synth_FPU(WaveTableContext& ctx, const Interpolator& interpolator,
+                          double& outLeft, double& outRight) const
 {
-    // iterato through samples
-    for (size_t i = 0; i < samplesNum; i++)
+    float leftSamples[2] =  { 0.0f, 0.0f };
+    float rightSamples[2] = { 0.0f, 0.0f };
+
+    // iterate through subvoices
+    for (size_t j = 0; j < ctx.voicesNum; ++j)
     {
-        float freq = freqBuff[i];
+        float freq = ctx.freqs[j];
 
         // cap frequency to half sample rate
         if (freq > 0.5f)
             freq = 0.5f;
 
-        float samples[2] = {0.0f, 0.0f};
+        // calculate phases
+        float phaseA = ctx.phases[j] + freq * 0.5f;
+        float phaseB = ctx.phases[j] + freq;
 
-        // iterate through subvoices
-        for (size_t j = 0; j < ctx.mPhases.size(); ++j)
+        if (phaseA > 1.0f)
+            phaseA -= 1.0f;
+        if (phaseB > 1.0f)
+            phaseB -= 1.0f;
+
+        ctx.phases[j] = phaseB;
+
+        float ratio = freq * mRootSizeF;
+
+        float mipmap_f = fast_log2(ratio);
+        int mipmap = static_cast<int>(mipmap_f);
+        float mipmap_pos = mipmap_f - static_cast<float>(mipmap);
+
+        // values of upsampled signal
+        float valA, valB;
+
+        // mipmap blending
+        if (mipmap_pos > MIPMAP_BLEND_TRESHOLD && mipmap >= 0 && mipmap < mMipsNum)
         {
-            // calculate phases
-            float phaseA = ctx.mPhases[j] + freq * 0.5f;
-            float phaseB = ctx.mPhases[j] + freq;
+            float blend_factor = mipmap_pos - MIPMAP_BLEND_TRESHOLD;
+            blend_factor *= 1.0f / (1.0f - MIPMAP_BLEND_TRESHOLD);
 
-            if (phaseA > 1.0f)
-                phaseA -= 1.0f;
-            if (phaseB > 1.0f)
-                phaseB -= 1.0f;
+            // linear interpolate between mipmaps
+            valA = (1.0f - blend_factor) * Sample_FPU(mipmap, phaseA, interpolator) +
+                blend_factor * Sample_FPU(mipmap + 1, phaseA, interpolator);
+            valB = (1.0f - blend_factor) * Sample_FPU(mipmap, phaseB, interpolator) +
+                blend_factor * Sample_FPU(mipmap + 1, phaseB, interpolator);
+        }
+        else
+        {
+            if (mipmap > mMipsNum)
+                mipmap = mMipsNum;
+            if (mipmap < 0)
+                mipmap = 0;
 
-            ctx.mPhases[j] = phaseB;
-
-            float ratio = freq * mRootSizeF;
-
-            float mipmap_f = fast_log2(ratio);
-            int mipmap = floorf(mipmap_f);
-            float mipmap_pos = mipmap_f - static_cast<float>(mipmap);
-
-            // mipmap blending
-            if (mipmap_pos > MIPMAP_BLEND_TRESHOLD && mipmap >= 0 && mipmap < mMipsNum)
-            {
-                float blend_factor = mipmap_pos - MIPMAP_BLEND_TRESHOLD;
-                blend_factor *= 1.0f / (1.0f - MIPMAP_BLEND_TRESHOLD);
-
-                samples[0] += (1.0f - blend_factor) * Sample_FPU(mipmap, phaseA, interpolator);
-                samples[1] += (1.0f - blend_factor) * Sample_FPU(mipmap, phaseB, interpolator);
-
-                samples[0] += blend_factor * Sample_FPU(mipmap + 1, phaseA, interpolator);
-                samples[1] += blend_factor * Sample_FPU(mipmap + 1, phaseB, interpolator);
-            }
-            else
-            {
-                if (mipmap > mMipsNum)
-                    mipmap = mMipsNum;
-                if (mipmap < 0)
-                    mipmap = 0;
-
-                samples[0] += Sample_FPU(mipmap, phaseA, interpolator);
-                samples[1] += Sample_FPU(mipmap, phaseB, interpolator);
-            }
+            valA = Sample_FPU(mipmap, phaseA, interpolator);
+            valB = Sample_FPU(mipmap, phaseB, interpolator);
         }
 
-        output[i] = ctx.Downsample(samples);
+        leftSamples[0] += ctx.leftPanning[j] * valA;
+        leftSamples[1] += ctx.leftPanning[j] * valB;
+
+        rightSamples[0] += ctx.rightPanning[j] * valA;
+        rightSamples[1] += ctx.rightPanning[j] * valB;
     }
+
+    outLeft = ctx.mLeftDownsampler.Downsample(leftSamples);
+    outRight = ctx.mRightDownsampler.Downsample(rightSamples);
 }
 
 } // namespace mvSynth

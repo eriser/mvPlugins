@@ -1,48 +1,42 @@
 #pragma once
 
 #include "Interpolator.hpp"
-#include <vector>
+#include "Downsampler.hpp"
 
 namespace mvSynth {
 
-#define ALIGNED __declspec(align(16))
-
-#define IIR_FILTER_SIZE 12
 #define MAX_VOICES 16
-
 #define MIPMAP_BLEND_TRESHOLD 0.98f
 
-class ALIGNED WaveTableContext final
+class WaveTableContext final
 {
     friend class WaveTable;
 
-    ALIGNED static const double a[];
-    ALIGNED static const double b[];
-    ALIGNED double mX[IIR_FILTER_SIZE];
-    ALIGNED double mY[IIR_FILTER_SIZE];
-    std::vector<float> mPhases;
+    Downsampler mLeftDownsampler;
+    Downsampler mRightDownsampler;
 
 public:
+
+    // TODO: better API
+    int voicesNum;
+
+    // This will be updated by Synth methods.
+    // Must be in [0.0, 1.0) range.
+    float phases[MAX_VOICES];
+
+    // Voice frequencies.
+    // 0.0 - 0Hz, 1.0 - sampling rate frequency, so only [0.0, 1.0) values are useful.
+    float freqs[MAX_VOICES];
+
+    float leftPanning[MAX_VOICES];
+    float rightPanning[MAX_VOICES];
+
     WaveTableContext();
 
     /**
      * Clear filter history.
      */
     void Reset();
-
-    /**
-     * Set subvoices number and set initial phases.
-     * @param numVoices Number of subvoices
-     */
-    void Init(size_t numVoices, float* newPhases);
-
-    /**
-     * Downsamples two samples into one using IIR lowpass filter.
-     * @param input Array of 2 input samples.
-     */
-    float Downsample(float* input);
-
-    float Downsample_SSE(float* input);
 };
 
 class WaveTable
@@ -87,8 +81,8 @@ public:
      * @param interpolator Wavetable interpolator.
      * @param[out] output  Buffer to write.
      */
-    void Synth_FPU(size_t samplesNum, const float* freqBuff, WaveTableContext& ctx,
-                   const Interpolator& interpolator, float* output) const;
+    void Synth_FPU(WaveTableContext& ctx, const Interpolator& interpolator,
+                   double& outLeft, double& outRight) const;
 
     /**
      * SSE version of @p Synth method.

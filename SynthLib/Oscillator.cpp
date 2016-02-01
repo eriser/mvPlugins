@@ -14,7 +14,6 @@ Oscillator::Oscillator()
     AddPort(PortType::Input, "stereo", 1);
     AddPort(PortType::Output, "output", 2);
 
-    shape = WaveShape::Saw;
     noteOffset = 0.0;
     subvoicesNum = 5;
     retrig = false;
@@ -24,7 +23,38 @@ Oscillator::Oscillator()
     enabled = false;
 }
 
-bool Oscillator::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
+void Oscillator::LoadDefaultWaveshape(WaveShape waveShape, Synth* synth)
+{
+    const int WAVE_TABLE_SIZE_POW = 11;
+    const int WAVE_TABLE_SIZE = 1 << WAVE_TABLE_SIZE_POW;
+
+    float wave[WAVE_TABLE_SIZE];
+
+    switch (waveShape)
+    {
+    case WaveShape::Sine:
+        for (int i = 0; i < WAVE_TABLE_SIZE; i++)
+            wave[i] = 1.0f * sinf(2.0f * M_PI * (float)i / (float)WAVE_TABLE_SIZE);
+        break;
+
+    case WaveShape::Saw:
+        for (int i = 0; i < WAVE_TABLE_SIZE; i++)
+            wave[i] = 1.5f * (-0.5f + (float)i / (float)WAVE_TABLE_SIZE);
+        break;
+
+    case WaveShape::Square:
+        for (int i = 0; i < WAVE_TABLE_SIZE; i++)
+            wave[i] = (i < WAVE_TABLE_SIZE / 2) ? -0.5f : 0.5f;
+        break;
+
+    default:
+        return;
+    }
+
+    mWaveTable.LoadData(wave, WAVE_TABLE_SIZE_POW, synth->GetInterpolator());
+}
+
+bool Oscillator::ParseFromConfig(Synth* synth, const YAML::Node& node, std::string& errorStr)
 {
     for (const auto& n : node)
     {
@@ -36,6 +66,7 @@ bool Oscillator::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
         }
         else if (str == "shape")
         {
+            WaveShape shape;
             const std::string& shapeStr = n.second.as<std::string>();
             if (shapeStr == "sine")
                 shape = WaveShape::Sine;
@@ -48,6 +79,8 @@ bool Oscillator::ParseFromConfig(const YAML::Node& node, std::string& errorStr)
                 errorStr += "Invalid oscillator shape '" + shapeStr + "'\n";
                 return false;
             }
+
+            LoadDefaultWaveshape(shape, synth);
         }
         else if (str == "pitch")
         {
@@ -85,109 +118,36 @@ void Oscillator::OnInitVoice(int voiceID, Synth* synth, SampleType freq)
     OscillatorVoiceData &data = mVoiceData[voiceID];
 
     data.faded = false;
-    data.baseFrequency = freq;
+    data.baseFrequency = freq * synth->GetSampleRateInv();
 
-    for (unsigned int i = 0; i < subvoicesNum; i++)
+    data.wtCtx.voicesNum = subvoicesNum;
+    data.wtCtx.Reset();
+
+    float subVoiceVolume = 1.0f / sqrtf(static_cast<float>(subvoicesNum));
+
+    for (uint32 i = 0; i < subvoicesNum; ++i)
     {
-        // randomize phase & panning
+        // set up initial subvoice phase
         if (retrig)
-        {
-            data.states[i].phase = 0.0f;
-            data.states[i].detuneOffset = 0.0f;
-        }
+            data.wtCtx.phases[i] = 0.0f;
         else
-        {
-            data.states[i].phase = synth->RandD() * M_PI;
-            data.states[i].detuneOffset = 0.5 * (synth->RandD() - 0.5);
-        }
+            data.wtCtx.phases[i] = synth->RandD();
 
-        data.states[i].panning = (i % 2) ? 0 : 1;
-        data.states[i].dcb_state = 0.0f;
-        data.states[i].freq = 0.0f;
-        data.states[i].last = 0.0f;
+        // randomize detune factor
+        // TODO: this should be configurable (no randomization, seed, distribution, etc.)
+        data.subvoiceDetune[i] = 0.5 * (synth->RandD() - 0.5);
 
-        // estimate wave value
-        data.states[i].leak = 0.0f;
-        data.states[i].firstSample = true;
+        // set panning
+        data.wtCtx.leftPanning[i] = (i % 2) ? 0.0f : subVoiceVolume;
+        data.wtCtx.rightPanning[i] = (i % 2) ? subVoiceVolume : 0.0f;
     }
 
     // if subvoices number is odd, one must be spreaded through both channels
     if (subvoicesNum % 2 == 1)
-        data.states[0].panning = 0.5;
-}
-
-// oscillator callback
-typedef SampleType(*OscillatorCallback)(OscillatorState*, Synth*);
-
-
-SampleType getSine(OscillatorState* state, Synth* synth)
-{
-    UNUSED(synth);
-
-    // return fast_sin(state->phase);
-    return Sin(state->phase);
-}
-
-// bandlimited sawtooth generator based on BLIT integration
-SampleType getSaw(OscillatorState* state, Synth* synth)
-{
-    SampleType phase = state->phase / 2.0;
-    SampleType p_ = state->freq * synth->GetSampleRateInv();
-    unsigned int maxHarmonics = (unsigned int)Floor(0.5 / p_);
-    unsigned int m = 2 * maxHarmonics + 1;
-
-    if (phase > M_PI / 2.0)
-        phase -= M_PI;
-
-    SampleType tmp;
-    if (Abs(phase) <= 1e-8)
     {
-        // Taylor expansion of  sin(m * phase)/sin(phase) at phase = 0
-        tmp = m + phase * phase * (m - m * m * m) / 6.0;
+        data.wtCtx.leftPanning[0] = subVoiceVolume / 2.0f;
+        data.wtCtx.rightPanning[0] = subVoiceVolume / 2.0f;
     }
-    else
-    {
-        tmp = Sin(m * phase);
-        tmp /= Sin(phase);
-    }
-
-    tmp = 2.0 * p_ * (tmp - 1.0) + state->leak;
-    state->leak = tmp * 0.999;
-    return tmp;
-}
-
-// bandlimited square wave generator based on BLIT integration
-SampleType getSquare(OscillatorState* state, Synth* synth)
-{
-    SampleType temp = state->leak;
-    SampleType p_ = 2.0 * state->freq * synth->GetSampleRateInv();
-    SampleType phase = state->phase;
-
-    unsigned int maxHarmonics = (unsigned int)Floor(0.5 / p_ + 0.5);
-    int m = 2 * maxHarmonics;
-    SampleType a_ = m * p_;
-
-    SampleType denominator = Sin(phase);
-    if (Abs(denominator) < 1e-10)
-    {
-        // Inexact comparison safely distinguishes betwen *close to zero*, and *close to PI*.
-        if (phase < 0.1f || phase > 2.0 * M_PI - 0.1)
-            state->leak = a_;
-        else
-            state->leak = -a_;
-    }
-    else
-    {
-        state->leak = Sin(m * phase) * p_ / denominator;
-    }
-
-    state->leak += temp;
-
-    // Now apply DC blocker.
-    state->last = state->leak - state->dcb_state + 0.999 * state->last;
-    state->dcb_state = state->leak;
-
-    return state->last;
 }
 
 // synthesise wave and store result in mOutput frame
@@ -206,28 +166,6 @@ void Oscillator::OnProcess(int voiceID, Synth* synth)
 
     SampleType freq = data.baseFrequency * pow(2.0, noteOffset / 12.0);
 
-    // pull branching out of the loop
-    OscillatorCallback callback = nullptr;
-    switch (shape)
-    {
-    case WaveShape::Saw:
-        callback = &getSaw;
-        break;
-    case WaveShape::Square:
-        callback = &getSquare;
-        break;
-    case WaveShape::Sine:
-        callback = &getSine;
-        break;
-    };
-
-    // invalid wave shape
-    if (callback == nullptr)
-    {
-        data.faded = true;
-        return;
-    }
-
     // calculate subvoices frequencies (log space)
     SampleType subVoiceFreqMult[MW_MAX_SUBVOICES_NUM];
     for (uint32 i = 0; i < subvoicesNum; i++)
@@ -235,49 +173,34 @@ void Oscillator::OnProcess(int voiceID, Synth* synth)
         // TODO: different unison subvoices distributions
         subVoiceFreqMult[i] = pow(2.0,
                                   detune * ((SampleType)i - (SampleType)(subvoicesNum - 1) /
-                                            2.0 + data.states[i].detuneOffset));
+                                            2.0 + data.subvoiceDetune[i]));
     }
 
-
-    SampleType subVoiceVolume = 1.0 / (SampleType)subvoicesNum;
     const SampleType fadeOutTreshold = 1e-5;
     bool canFadeOut = true;
 
     for (size_t i = 0; i < synth->GetFrameSize(); i++)
     {
-        SampleType leftValue = 0.0f;
-        SampleType rightValue = 0.0f;
-
         SampleType finalFreq = freq;
         finalFreq *= (1.0f + mInputs[PitchPortId].frame[i]);
 
-        // accumulate subvoices
         for (uint32 j = 0; j < subvoicesNum; j++)
-        {
-            SampleType subVoiceFreq = finalFreq * subVoiceFreqMult[j];
+            data.wtCtx.freqs[j] = static_cast<float>(finalFreq * subVoiceFreqMult[j]);
 
-            // phase from 0 to PI
-            data.states[j].freq = subVoiceFreq;
-            data.states[j].phase += 2.0 * M_PI * subVoiceFreq * synth->GetSampleRateInv();
-            if (data.states[j].phase > 2.0 * M_PI)
-                data.states[j].phase -= 2.0 * M_PI;
+        SampleType leftValue;
+        SampleType rightValue;
+        mWaveTable.Synth_FPU(data.wtCtx, synth->GetInterpolator(),
+                             leftValue, rightValue);
 
-            // get wave value
-            SampleType mMonoValue = callback(data.states + j, synth);
+        SampleType volume = mInputs[VolumePortId].frame[i];
 
-            // stereo separation
-            leftValue += mMonoValue * data.states[j].panning;
-            rightValue += mMonoValue * (1.0 - data.states[j].panning);
-        }
-
-        SampleType volumeMult = mInputs[VolumePortId].frame[i];
-        SampleType volume = subVoiceVolume * volumeMult;
+        // TODO: panning
 
         mOutputs[0].frame[2 * i] = volume * leftValue;
         mOutputs[0].frame[2 * i + 1] = volume * rightValue;
 
         // disable voice if it's not audiable
-        if (Abs(volumeMult) > fadeOutTreshold)
+        if (Abs(volume) > fadeOutTreshold)
             canFadeOut = false;
     }
 
