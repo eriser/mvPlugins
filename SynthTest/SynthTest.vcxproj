@@ -15,7 +15,10 @@
     <ClInclude Include="AppConfig.h" />
     <ClInclude Include="JuceHeaders.h" />
     <ClInclude Include="MidiSetup.h" />
-    <ClInclude Include="SynthComponent.h" />
+    <ClInclude Include="Modules\OscillatorComponent.h" />
+    <ClInclude Include="SynthAudioSource.h" />
+    <ClInclude Include="SynthGUI.h" />
+    <ClInclude Include="SynthTextEditorComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\JUCE\modules\juce_audio_basics\juce_audio_basics.cpp" />
@@ -32,7 +35,10 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainComponent.cpp" />
     <ClCompile Include="MidiSetup.cpp" />
-    <ClCompile Include="SynthComponent.cpp" />
+    <ClCompile Include="Modules\OscillatorComponent.cpp" />
+    <ClCompile Include="SynthAudioSource.cpp" />
+    <ClCompile Include="SynthGUI.cpp" />
+    <ClCompile Include="SynthTextEditorComponent.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8F45B7EA-1A01-2B7E-B83C-0210B025C28F}</ProjectGuid>

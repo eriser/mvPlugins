@@ -7,6 +7,9 @@
     <Filter Include="JUCE">
       <UniqueIdentifier>{ccd2eb52-b33c-4c7c-a4b9-3928eb07bf54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Modules">
+      <UniqueIdentifier>{d7630d99-bf64-4a9d-9459-151581087b0f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppConfig.h">
@@ -15,14 +18,23 @@
     <ClInclude Include="MidiSetup.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="SynthComponent.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="..\Spectrograph\JuceHeaders.h">
       <Filter>JUCE</Filter>
     </ClInclude>
     <ClInclude Include="JuceHeaders.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SynthTextEditorComponent.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SynthGUI.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SynthAudioSource.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\OscillatorComponent.h">
+      <Filter>Source\Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -33,9 +45,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="MidiSetup.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="SynthComponent.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\JUCE\modules\juce_audio_basics\juce_audio_basics.cpp">
@@ -70,6 +79,18 @@
     </ClCompile>
     <ClCompile Include="..\JUCE\modules\juce_gui_extra\juce_gui_extra.cpp">
       <Filter>JUCE</Filter>
+    </ClCompile>
+    <ClCompile Include="SynthTextEditorComponent.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SynthGUI.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="SynthAudioSource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\OscillatorComponent.cpp">
+      <Filter>Source\Modules</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
